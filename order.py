@@ -1,7 +1,7 @@
 __author__ = 'Matius Hurskainen'
 
 
-import main
+#import main
 
 
 class Order:
