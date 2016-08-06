@@ -24,10 +24,10 @@ import variables
 # FOOD_3_DOWN = 26
 
 
-LINE_1 = "Ranut   0       "
-LINE_2 = "MaPe    0       "
-LINE_3 = "Sipuli  0       "
-LINE_4 = "Lihis   0  = 0 e"
+# LINE_1 = "Ranut   0       "
+# LINE_2 = "MaPe    0       "
+# LINE_3 = "Sipuli  0       "
+# LINE_4 = "Lihis   0  = 0 e"
 
 
 #QUEUE_NUMBER = 0
@@ -65,13 +65,16 @@ def main():
 
         # Init LCD-display
         lcd_i2c.lcd_init()
-        lcd_i2c.lcd_string(LINE_1, lcd_i2c.LCD_LINE_1)
-        lcd_i2c.lcd_string(LINE_2, lcd_i2c.LCD_LINE_2)
-        lcd_i2c.lcd_string(LINE_3, lcd_i2c.LCD_LINE_3)
-        lcd_i2c.lcd_string(LINE_4, lcd_i2c.LCD_LINE_4)
+        order_mode.format_LCD()
+        # for i in range(4):
+        #     lcd_i2c.lcd_string(order_mode.LCD_DEFAULT_LINES[i], lcd_i2c.LCD_ADDRESSES[i])
+        # lcd_i2c.lcd_string(LINE_1, lcd_i2c.LCD_LINE_1)
+        # lcd_i2c.lcd_string(LINE_2, lcd_i2c.LCD_LINE_2)
+        # lcd_i2c.lcd_string(LINE_3, lcd_i2c.LCD_LINE_3)
+        # lcd_i2c.lcd_string(LINE_4, lcd_i2c.LCD_LINE_4)
 
         # Get queue number from logfile
-        logfile = open('logfile.txt', 'rw')
+        logfile = open('logfile.txt', 'r')
         for line in logfile:
             pass
         last_line = line

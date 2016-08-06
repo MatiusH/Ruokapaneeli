@@ -51,6 +51,11 @@ NUMBERS = {' ': (0, 0, 0, 0, 0, 0, 0),
            '8': (1, 1, 1, 1, 1, 1, 1),
            '9': (1, 1, 1, 1, 0, 1, 1)}
 
+LCD_DEFAULT_LINES = ["Ranut   0       ",
+                     "MaPe    0       ",
+                     "Sipuli  0       ",
+                     "Lihis   0  = 0 e"]
+
 
 def setup_7_seg_pins():
     for digit in DIGITS:
@@ -62,13 +67,18 @@ def setup_7_seg_pins():
 
 
 
+def format_LCD():
+    for i in range(4):
+        lcd_i2c.lcd_string(LCD_DEFAULT_LINES[i], lcd_i2c.LCD_ADDRESSES[i])
+
+
+
 def update_queue_number():
     variables.FOUR_DIGIT_QUEUE_NUMBER = (4 - len(str(variables.QUEUE_NUMBER))) * ' ' + \
                                                     str(variables.QUEUE_NUMBER)
 
 
 def setup_buttons():
-    # Setup buttons
         GPIO.setup(MAIN_SWITCH, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
         GPIO.setup(NUMBER_UP,   GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
         GPIO.setup(NUMBER_DOWN, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
@@ -82,7 +92,48 @@ def setup_buttons():
         GPIO.setup(FOOD_3_DOWN, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 
+def write_order_to_logfile():
+    logfile = open('logfile.txt', 'r+')
+    # If the order exists and needs to be modified
+    queue_number_str = ((4 - len(str(variables.QUEUE_NUMBER))) * '0' + str(variables.QUEUE_NUMBER))
+    for rivi in logfile:
+        if rivi[0:4] == queue_number_str:
+            rivi = (rivi[0:5] + str(variables.TO_BE_COOKED[0]) + ' ' + \
+                         str(variables.TO_BE_COOKED[1]) + ' ' + \
+                         str(variables.TO_BE_COOKED[2]) + ' ' + \
+                         str(variables.TO_BE_COOKED[3]) + '\n')
+            logfile.close()
+            return
+        else:
+            continue
+    # If the order is new
+    logfile.write('\n' + (4 - len(str(variables.QUEUE_NUMBER))) * '0' + \
+                           str(variables.QUEUE_NUMBER)   + ' ' + \
+                           str(variables.TO_BE_COOKED[0]) + ' ' + \
+                           str(variables.TO_BE_COOKED[1]) + ' ' + \
+                           str(variables.TO_BE_COOKED[2]) + ' ' + \
+                           str(variables.TO_BE_COOKED[3]))
+    logfile.close()
+
+
+def read_order_from_logfile():
+    logfile = open('logfile.txt', 'r')
+    queue_number_str = ((4 - len(str(variables.QUEUE_NUMBER))) * '0' + str(variables.QUEUE_NUMBER))
+    for rivi in logfile:
+        if rivi[0:4] == queue_number_str:
+            variables.TO_BE_COOKED[0] = rivi[5]
+            variables.TO_BE_COOKED[1] = rivi[7]
+            variables.TO_BE_COOKED[2] = rivi[9]
+            variables.TO_BE_COOKED[3] = rivi[11]
+        else:
+            continue
+    logfile.close()
+
+
 def next_order():
+    write_order_to_logfile()
+    variables.TO_BE_COOKED = [0, 0, 0, 0]
+    format_LCD()
     variables.QUEUE_NUMBER += 1
     update_queue_number()
     cycle_queue_number(100)
@@ -94,14 +145,33 @@ def previous_order():
     if variables.QUEUE_NUMBER > 0:
         variables.QUEUE_NUMBER -= 1
     update_queue_number()
+
+    # Update food orders on LCD
+    read_order_from_logfile()
+    for i in range(4):
+        update_LCD(i, str(variables.TO_BE_COOKED[i]))
+
     cycle_queue_number(100)
     GPIO.add_event_detect(NUMBER_DOWN,   GPIO.FALLING)
     return
 
 
 def food_count(food_number, direction):
-    # TODO
-    pass
+    # Increase food count
+    if direction == 1:
+        variables.TO_BE_COOKED[food_number] += 1
+    # Decrease food count
+    elif direction == 0:
+        if variables.TO_BE_COOKED[food_number] > 0:
+            variables.TO_BE_COOKED[food_number] -= 1
+    update_LCD(food_number, str(variables.TO_BE_COOKED[food_number]))
+    cycle_queue_number(100)
+
+
+
+def update_LCD(line, number):
+    lcd_i2c.lcd_string((LCD_DEFAULT_LINES[line][0:8] + number + LCD_DEFAULT_LINES[line][9:16]), lcd_i2c.LCD_ADDRESSES[line])
+
 
 
 def cycle_queue_number(count):
@@ -132,25 +202,51 @@ def enter_order_mode():
             if GPIO.event_detected(NUMBER_UP):
                 GPIO.remove_event_detect(NUMBER_UP)
                 next_order()
+
             elif GPIO.event_detected(NUMBER_DOWN):
                 GPIO.remove_event_detect(NUMBER_DOWN)
                 previous_order()
+
             elif GPIO.event_detected(FOOD_0_UP):
+                GPIO.remove_event_detect(FOOD_0_UP)
                 food_count(0, 1)
+                GPIO.add_event_detect(FOOD_0_UP, GPIO.FALLING)
+
             elif GPIO.event_detected(FOOD_0_DOWN):
+                GPIO.remove_event_detect(FOOD_0_DOWN)
                 food_count(0, 0)
+                GPIO.add_event_detect(FOOD_0_DOWN, GPIO.FALLING)
+
             elif GPIO.event_detected(FOOD_1_UP):
+                GPIO.remove_event_detect(FOOD_1_UP)
                 food_count(1, 1)
+                GPIO.add_event_detect(FOOD_1_UP, GPIO.FALLING)
+
             elif GPIO.event_detected(FOOD_1_DOWN):
+                GPIO.remove_event_detect(FOOD_1_DOWN)
                 food_count(1, 0)
+                GPIO.add_event_detect(FOOD_1_DOWN, GPIO.FALLING)
+
             elif GPIO.event_detected(FOOD_2_UP):
+                GPIO.remove_event_detect(FOOD_2_UP)
                 food_count(2, 1)
+                GPIO.add_event_detect(FOOD_2_UP, GPIO.FALLING)
+
             elif GPIO.event_detected(FOOD_2_DOWN):
+                GPIO.remove_event_detect(FOOD_2_DOWN)
                 food_count(2, 0)
+                GPIO.add_event_detect(FOOD_2_DOWN, GPIO.FALLING)
+
             elif GPIO.event_detected(FOOD_3_UP):
+                GPIO.remove_event_detect(FOOD_3_UP)
                 food_count(3, 1)
+                GPIO.add_event_detect(FOOD_3_UP, GPIO.FALLING)
+
             elif GPIO.event_detected(FOOD_3_DOWN):
+                GPIO.remove_event_detect(FOOD_3_DOWN)
                 food_count(3, 0)
+                GPIO.add_event_detect(FOOD_3_DOWN, GPIO.FALLING)
+
             cycle_queue_number(1)
 
         serving_mode.enter_serving_mode()

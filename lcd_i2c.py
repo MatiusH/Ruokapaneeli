@@ -42,10 +42,11 @@ LCD_WIDTH = 16   # Maximum characters per line
 LCD_CHR = 1 # Mode - Sending data
 LCD_CMD = 0 # Mode - Sending command
 
-LCD_LINE_1 = 0x80 # LCD RAM address for the 1st line
-LCD_LINE_2 = 0xC0 # LCD RAM address for the 2nd line
-LCD_LINE_3 = 0x90 # LCD RAM address for the 3rd line
-LCD_LINE_4 = 0xD0 # LCD RAM address for the 4th line
+LCD_ADDRESSES = [0x80, 0xC0, 0x90, 0xD0]
+# LCD_LINE_1 = 0x80 # LCD RAM address for the 1st line
+# LCD_LINE_2 = 0xC0 # LCD RAM address for the 2nd line
+# LCD_LINE_3 = 0x90 # LCD RAM address for the 3rd line
+# LCD_LINE_4 = 0xD0 # LCD RAM address for the 4th line
 
 LCD_BACKLIGHT  = 0x08  # On
 #LCD_BACKLIGHT = 0x00  # Off
