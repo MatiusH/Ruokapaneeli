@@ -2,7 +2,7 @@ __author__ = 'Matius Hurskainen'
 
 
 import RPi.GPIO as GPIO
-import queue_number
+import number
 import lcd_i2c
 import order
 import order_mode
@@ -38,21 +38,26 @@ def main():
         # Luodaan olio jokaisesta lokitiedoston rivistä
         logfile = open('logfile.txt', 'r')
         for line in logfile:
-            number = int(line[0:4])
+            number = line[0:4]
             orders = []
             orders.append(5)
             orders.append(7)
             orders.append(9)
             orders.append(11)
             servings = []
-            orders.append(13)
-            orders.append(15)
-            orders.append(17)
-            orders.append(19)
-            order_mode.ALL_ORDERS.append(order.Order(number, orders, servings))
+            servings.append(13)
+            servings.append(15)
+            servings.append(17)
+            servings.append(19)
+            order_mode.ALL_ORDERS.append(order.Order(number, orders, servings,True))
+        logfile.close()
+
+        if len(order_mode.ALL_ORDERS) > 0:
+            order_mode.vuoronumero = order_mode.ALL_ORDERS[len(order_mode.ALL_ORDERS) - 2].return_queue_number
 
         # order_mode.update_queue_number()          pois?
 
+        # print(order_mode.ALL_ORDERS[0].return_four_digit_queue_number)
 
         if GPIO.input(order_mode.MAIN_SWITCH):
             order_mode.enter_order_mode()

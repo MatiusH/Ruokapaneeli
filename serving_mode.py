@@ -1,7 +1,7 @@
 __author__ = 'Matius Hurskainen'
 
 import RPi.GPIO as GPIO
-import queue_number
+import number
 import lcd_i2c
 import order
 import order_mode
