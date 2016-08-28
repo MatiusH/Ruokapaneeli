@@ -22,14 +22,32 @@ class Order:
         if served_foods is None:
             self.__served_foods = [0, 0, 0, 0]
 
+        self.__in_logfile = False
+
         self.update_logfile()
 
     def update_logfile(self):
         logfile = open('logfile.txt', 'r+')
+        string = ""
 
-        for line in logfile:
-            if line[0:4] == self.__queue_number:
-                print("placeholder")
+        if not self.__in_logfile:
+            logfile.write('\n' + self.__queue_number + " ")
+            self.__in_logfile = True
+
+        if self.__in_logfile:
+            for line in logfile:
+                if line[0:4] == self.__queue_number:
+                    for i in range(0, 2):
+                        if i == 0:
+                            lista = self.__ordered_foods
+                        if i == 1:
+                            lista = self.__served_foods
+
+                        for j in range(0, 4):
+                            string += str(lista[j] + " ")
+
+                    line = line[0:5] + string
+                    break
 
         logfile.close()
 
@@ -39,6 +57,11 @@ class Order:
     def add_ordered_food(self, food_number):
         self.__ordered_foods[food_number] += 1
         Order.total_orders[food_number] += 1  # Lisätään jäljellä oleviin tilauksiin 1.
+        self.update_logfile()
+
+    def remove_ordered_food(self, food_number):
+        self.__ordered_foods[food_number] -= 1
+        Order.total_orders[food_number] -= 1  # Lisätään jäljellä oleviin tilauksiin 1.
         self.update_logfile()
 
     def return_ordered_food(self):
