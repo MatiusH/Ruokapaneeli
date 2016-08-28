@@ -57,6 +57,9 @@ LCD_DEFAULT_LINES = ["Ranut   0       ",
                      "Lihis   0  = 0 e"]
 
 
+ALL_ORDERS = []
+
+
 def setup_7_seg_pins():
     for digit in DIGITS:
         GPIO.setup(digit, GPIO.OUT)
@@ -95,7 +98,8 @@ def setup_buttons():
 def write_order_to_logfile():
     logfile = open('logfile.txt', 'r+')
     # If the order exists and needs to be modified
-    queue_number_str = ((4 - len(str(variables.QUEUE_NUMBER))) * '0' + str(variables.QUEUE_NUMBER))
+    # queue_number_str = ((4 - len(str(variables.QUEUE_NUMBER))) * '0' + str(variables.QUEUE_NUMBER))
+    queue_number_str = ((4 - len(str(variables.QUEUE_NUMBER))) * '0' + str(variables.QUEUE_NUMBER)) ########################################
     for rivi in logfile:
         if rivi[0:4] == queue_number_str:
             rivi = (rivi[0:5] + str(variables.TO_BE_COOKED[0]) + ' ' + \
@@ -184,6 +188,9 @@ def cycle_queue_number(count):
             GPIO.output(DIGITS[digit_num], 1)
 
 
+
+
+
 def enter_order_mode():
     GPIO.add_event_detect(MAIN_SWITCH, GPIO.FALLING)
     GPIO.add_event_detect(NUMBER_UP,   GPIO.FALLING)
@@ -197,17 +204,13 @@ def enter_order_mode():
     GPIO.add_event_detect(FOOD_3_UP,   GPIO.FALLING)
     GPIO.add_event_detect(FOOD_3_DOWN, GPIO.FALLING)
 
+    # Disable 7-segment display
+    for digit in DIGITS:
+        GPIO.output(digit, 1)
+
     try:
         while not GPIO.event_detected(MAIN_SWITCH):
-            if GPIO.event_detected(NUMBER_UP):
-                GPIO.remove_event_detect(NUMBER_UP)
-                next_order()
-
-            elif GPIO.event_detected(NUMBER_DOWN):
-                GPIO.remove_event_detect(NUMBER_DOWN)
-                previous_order()
-
-            elif GPIO.event_detected(FOOD_0_UP):
+            if GPIO.event_detected(FOOD_0_UP):
                 GPIO.remove_event_detect(FOOD_0_UP)
                 food_count(0, 1)
                 GPIO.add_event_detect(FOOD_0_UP, GPIO.FALLING)
@@ -247,9 +250,75 @@ def enter_order_mode():
                 food_count(3, 0)
                 GPIO.add_event_detect(FOOD_3_DOWN, GPIO.FALLING)
 
+            elif GPIO.event_detected(NUMBER_UP):
+                GPIO.remove_event_detect(NUMBER_UP)
+                next_order()
+
+            elif GPIO.event_detected(NUMBER_DOWN):
+                GPIO.remove_event_detect(NUMBER_DOWN)
+                previous_order()
+
             cycle_queue_number(1)
 
+        GPIO.remove_event_detect(MAIN_SWITCH)
         serving_mode.enter_serving_mode()
 
     except KeyboardInterrupt:
         return
+
+
+
+
+    #
+    # def enter_serving_mode():
+    #     GPIO.add_event_detect(MAIN_SWITCH, GPIO.RISING)
+    #     GPIO.remove_event_detect(NUMBER_UP)
+    #     GPIO.remove_event_detect(NUMBER_DOWN)
+    #
+    #     try:
+    #         while not GPIO.event_detected(MAIN_SWITCH):
+    #             if GPIO.event_detected(FOOD_0_UP):
+    #                 GPIO.remove_event_detect(FOOD_0_UP)
+    #                 food_count(0, 1)
+    #                 GPIO.add_event_detect(FOOD_0_UP, GPIO.FALLING)
+    #
+    #             elif GPIO.event_detected(FOOD_0_DOWN):
+    #                 GPIO.remove_event_detect(FOOD_0_DOWN)
+    #                 food_count(0, 0)
+    #                 GPIO.add_event_detect(FOOD_0_DOWN, GPIO.FALLING)
+    #
+    #             elif GPIO.event_detected(FOOD_1_UP):
+    #                 GPIO.remove_event_detect(FOOD_1_UP)
+    #                 food_count(1, 1)
+    #                 GPIO.add_event_detect(FOOD_1_UP, GPIO.FALLING)
+    #
+    #             elif GPIO.event_detected(FOOD_1_DOWN):
+    #                 GPIO.remove_event_detect(FOOD_1_DOWN)
+    #                 food_count(1, 0)
+    #                 GPIO.add_event_detect(FOOD_1_DOWN, GPIO.FALLING)
+    #
+    #             elif GPIO.event_detected(FOOD_2_UP):
+    #                 GPIO.remove_event_detect(FOOD_2_UP)
+    #                 food_count(2, 1)
+    #                 GPIO.add_event_detect(FOOD_2_UP, GPIO.FALLING)
+    #
+    #             elif GPIO.event_detected(FOOD_2_DOWN):
+    #                 GPIO.remove_event_detect(FOOD_2_DOWN)
+    #                 food_count(2, 0)
+    #                 GPIO.add_event_detect(FOOD_2_DOWN, GPIO.FALLING)
+    #
+    #             elif GPIO.event_detected(FOOD_3_UP):
+    #                 GPIO.remove_event_detect(FOOD_3_UP)
+    #                 food_count(3, 1)
+    #                 GPIO.add_event_detect(FOOD_3_UP, GPIO.FALLING)
+    #
+    #             elif GPIO.event_detected(FOOD_3_DOWN):
+    #                 GPIO.remove_event_detect(FOOD_3_DOWN)
+    #                 food_count(3, 0)
+    #                 GPIO.add_event_detect(FOOD_3_DOWN, GPIO.FALLING)
+    #
+    #         GPIO.remove_event_detect(MAIN_SWITCH)
+    #         enter_order_mode()
+    #
+    #     except KeyboardInterrupt:
+    #         return
