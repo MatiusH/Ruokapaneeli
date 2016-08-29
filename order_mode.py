@@ -82,6 +82,15 @@ class Register:
         self.__ALL_ORDERS = []
         self.__QUEUE_NUMBER = 0
         self.__FOUR_DIGIT_QUEUE_NUMBER = '    '
+        self.setup()
+        # Start user interface
+        if GPIO.input(MAIN_SWITCH):
+            self.order_mode()
+        else:
+            GPIO.add_event_detect(MAIN_SWITCH, GPIO.RISING)
+            #serving_mode()
+            print('Serving_mode')
+            return
 
 
     def setup(self):
@@ -129,6 +138,11 @@ class Register:
         # Update QUEUE_NUMBER to latest existing one
         if len(self.__ALL_ORDERS) > 0:
             self.__QUEUE_NUMBER = self.__ALL_ORDERS[len(self.__ALL_ORDERS) - 2].return_queue_number
+            self.update_four_digit_queue_number()
+
+        # Update LCD
+        for i in range(0, 4):
+            self.update_LCD(i, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[i])
 
 
 
@@ -143,12 +157,14 @@ class Register:
 
 
     def update_LCD(self, line, number):
-        lcd_i2c.lcd_string((LCD_DEFAULT_LINES[line][0:8] + number + LCD_DEFAULT_LINES[line][9:16]), lcd_i2c.LCD_ADDRESSES[line])
+        lcd_i2c.lcd_string((LCD_DEFAULT_LINES[line][0:8] + str(number) + LCD_DEFAULT_LINES[line][9:16]), lcd_i2c.LCD_ADDRESSES[line])
 
 
     def next_order(self):
         # New order
-        if len(self.__ALL_ORDERS) == (self.__QUEUE_NUMBER + 1):
+        # print("len " + str(len(self.__ALL_ORDERS)))
+        # print(self.__QUEUE_NUMBER + 1)
+        if len(self.__ALL_ORDERS) == (self.__QUEUE_NUMBER):
             self.__ALL_ORDERS.append(order.Order(self.__QUEUE_NUMBER + 1))
             self.__QUEUE_NUMBER += 1
             self.update_four_digit_queue_number()
@@ -162,12 +178,13 @@ class Register:
 
 
     def previous_order(self):
-        if self.__QUEUE_NUMBER > 0:
+        if self.__QUEUE_NUMBER > 1:
             self.__QUEUE_NUMBER -= 1
             self.update_four_digit_queue_number()
             # Update LCD
             for i in range(0, 4):
                 self.update_LCD(i, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[i])
+                print("bla")
 
             # Update food orders on LCD
             #             read_order_from_logfile()
@@ -194,6 +211,10 @@ class Register:
                     GPIO.output(DIGITS[digit_num], 1)
 
 
+    def return_all_orders(self):
+        return self.__ALL_ORDERS
+
+
     def order_mode(self):
         GPIO.add_event_detect(MAIN_SWITCH, GPIO.FALLING)
         GPIO.add_event_detect(NUMBER_UP,   GPIO.FALLING)
@@ -214,44 +235,61 @@ class Register:
         try:
             # Loop until main switch is flipped
             while not GPIO.event_detected(MAIN_SWITCH):
+                # TODO: näistä funktio
                 if GPIO.event_detected(FOOD_0_UP):
                     GPIO.remove_event_detect(FOOD_0_UP)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].add_ordered_food(0)
+                    self.update_LCD(0, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[0])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_0_UP, GPIO.FALLING)
 
                 elif GPIO.event_detected(FOOD_0_DOWN):
                     GPIO.remove_event_detect(FOOD_0_DOWN)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].remove_ordered_food(0)
+                    self.update_LCD(0, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[0])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_0_DOWN, GPIO.FALLING)
 
                 elif GPIO.event_detected(FOOD_1_UP):
                     GPIO.remove_event_detect(FOOD_1_UP)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].add_ordered_food(1)
+                    self.update_LCD(1, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[1])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_1_UP, GPIO.FALLING)
 
                 elif GPIO.event_detected(FOOD_1_DOWN):
                     GPIO.remove_event_detect(FOOD_1_DOWN)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].add_ordered_food(1)
+                    self.update_LCD(1, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[1])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_1_DOWN, GPIO.FALLING)
 
                 elif GPIO.event_detected(FOOD_2_UP):
                     GPIO.remove_event_detect(FOOD_2_UP)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].add_ordered_food(2)
+                    self.update_LCD(2, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[2])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_2_UP, GPIO.FALLING)
 
                 elif GPIO.event_detected(FOOD_2_DOWN):
                     GPIO.remove_event_detect(FOOD_2_DOWN)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].remove_ordered_food(2)
+                    self.update_LCD(2, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[2])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_2_DOWN, GPIO.FALLING)
 
                 elif GPIO.event_detected(FOOD_3_UP):
                     GPIO.remove_event_detect(FOOD_3_UP)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].add_ordered_food(3)
+                    self.update_LCD(3, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[3])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_3_UP, GPIO.FALLING)
 
                 elif GPIO.event_detected(FOOD_3_DOWN):
                     GPIO.remove_event_detect(FOOD_3_DOWN)
                     self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].remove_ordered_food(3)
+                    self.update_LCD(3, self.__ALL_ORDERS[self.__QUEUE_NUMBER - 1].return_ordered_foods[3])
+                    self.cycle_queue_number(100)
                     GPIO.add_event_detect(FOOD_3_DOWN, GPIO.FALLING)
 
                 elif GPIO.event_detected(NUMBER_UP):
@@ -322,7 +360,6 @@ class Register:
 #         QUEUE_NUMBER -= 1
 #
 #     # Update food orders on LCD
-#     # TODO
 #     #             read_order_from_logfile()
 #     #             for i in range(4):
 #     #                 update_LCD(i, str(variables.TO_BE_COOKED[i]))

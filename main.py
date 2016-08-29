@@ -61,18 +61,18 @@ def main():
         #     #serving_mode.enter_serving_mode()
         #     print('Serving_mode')
 
-        om = order_mode.Register
-        om.setup()
+        om = order_mode.Register()
+        # om.setup()
 
 
-        # Start user interface
-        if GPIO.input(order_mode.MAIN_SWITCH):
-            om.order_mode()
-        else:
-            GPIO.add_event_detect(order_mode.MAIN_SWITCH, GPIO.RISING)
-            #serving_mode()
-            print('Serving_mode')
-            return
+        # # Start user interface
+        # if GPIO.input(order_mode.MAIN_SWITCH):
+        #     om.order_mode()
+        # else:
+        #     GPIO.add_event_detect(order_mode.MAIN_SWITCH, GPIO.RISING)
+        #     #serving_mode()
+        #     print('Serving_mode')
+        #     return
 
     except KeyboardInterrupt:
         GPIO.cleanup()
