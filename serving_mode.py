@@ -1,12 +1,10 @@
 __author__ = 'Matius Hurskainen'
 
 import RPi.GPIO as GPIO
-import number
 import lcd_i2c
 import order
 import order_mode
 from time import sleep
-import variables
 
 
 

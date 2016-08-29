@@ -90,7 +90,7 @@ class Order:
             pass
 
     @property
-    def return_ordered_food(self):
+    def return_ordered_foods(self):
         return self.__ordered_foods
 
     def serve_food(self, food_number):
